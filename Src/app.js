@@ -1,21 +1,25 @@
 const express = require('express');
 const connectDB = require('../config/mongodatabase');
 const User = require('../models/user');
-
+const cors = require('cors');
+const cookieParser = require("cookie-parser");
 const app = express();
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    optionsSuccessStatus: 200
+    
+
+}));
+app.use(cookieParser());
 //If we wont give path in ap.use it will apply for all paths
 app.use(express.json()); // it is a middleware provided by express to conver req body to json if this is not there we cannot read req.body directly
 app.use(express.urlencoded({ extended: true }));
 
-app.post("/signup", async (req, res) => {
-    const user = new User(req.body);
-    try {
-        await user.save();
-        res.send('User created successfully');
-    } catch (err) {
-        res.status(400).json({ message: 'Creation failed', error: err.message });
-    }
-});
+const authRouter = require('../routes/auth');
+app.use("/", authRouter);
+
+
 
 connectDB().then(() => {
     console.log('Connection established successfully');
