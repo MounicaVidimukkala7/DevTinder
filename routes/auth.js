@@ -8,7 +8,7 @@ const { validateSignUpData, validateLoginData } = require("../utils/validation")
 router.post("/signup", async (req, res) => {
     try {
         validateSignUpData(req);
-        const { firstName, lastName, emailId, password } = req.body;
+        const { firstName, lastName, emailId, password,age,gender,about,photoUrl } = req.body;
         const passwordHash = await bcrypt.hash(password, 10);
         //console.log('passwordHash',passwordHash)
         const user = new User({
@@ -16,6 +16,7 @@ router.post("/signup", async (req, res) => {
             lastName,
             emailId,
             password: passwordHash,
+            age,gender,about,photoUrl
         });
         await user.save();
         res.status(200).json({ message: "Account created succcessfully",data: user })
@@ -44,7 +45,7 @@ router.post("/login", async (req, res) => {
       
             //* adding the token to cookie and send back to user
             res.cookie("token", token);
-            res.status(200).json({ message: "login successful", data:user });
+            res.send(user)
           } else {
             throw new Error("Invalid Credential");
           }
@@ -52,4 +53,11 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+router.post("/logout", async (req,res) => {
+    res.cookie("token",null,{
+        expires: new Date(Date.now()),
+      })
+      res.send("Logout Successsfull")
+})
 module.exports = router;

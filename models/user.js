@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
             message: "Password is not strong",
         }
     },
-    avatar: {
+    photoUrl: {
         type: String,
         trim: true,
         validate: {
@@ -88,6 +88,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["active", "deactivated", "banned"],
         default: "active",
+    },
+    about: {
+        type: String,
+        validate: {
+            validator: (value) => {
+                return value.length < 100
+            },
+            message: "Enter small text"
+        }
+
     }
 },
     { timestamps: true })

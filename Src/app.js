@@ -1,31 +1,48 @@
-const express = require('express');
-const connectDB = require('../config/mongodatabase');
-const User = require('../models/user');
-const cors = require('cors');
-const cookieParser = require("cookie-parser");
+const express = require("express");
+const connectDB = require("./config/database");
 const app = express();
-app.use(cors({
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const http = require("http");
+
+require("dotenv").config();
+
+require("./utils/cronjob");
+
+app.use(
+  cors({
     origin: "http://localhost:5173",
     credentials: true,
-    optionsSuccessStatus: 200
-    
-
-}));
+  })
+);
+app.use(express.json());
 app.use(cookieParser());
-//If we wont give path in ap.use it will apply for all paths
-app.use(express.json()); // it is a middleware provided by express to conver req body to json if this is not there we cannot read req.body directly
-app.use(express.urlencoded({ extended: true }));
 
-const authRouter = require('../routes/auth');
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
+const paymentRouter = require("./routes/payment");
+const initializeSocket = require("./utils/socket");
+const chatRouter = require("./routes/chat");
+
 app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
+app.use("/", paymentRouter);
+app.use("/", chatRouter);
 
+const server = http.createServer(app);
+initializeSocket(server);
 
-
-connectDB().then(() => {
-    console.log('Connection established successfully');
-    app.listen(7777, () => {
-        console.log('Server created successfully on port 7777');
+connectDB()
+  .then(() => {
+    console.log("Database connection established...");
+    server.listen(process.env.PORT, () => {
+      console.log("Server is successfully listening on port 7777...");
     });
-}).catch((err) => {
-    console.error('MongoDB not connected:', err);
-});
+  })
+  .catch((err) => {
+    console.error("Database cannot be connected!!");
+  });
